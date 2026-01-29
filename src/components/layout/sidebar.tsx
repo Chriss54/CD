@@ -1,0 +1,57 @@
+import Image from 'next/image';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { NavLink } from './nav-link';
+import { SidebarUserMenu } from '@/components/auth/sidebar-user-menu';
+import { getCommunitySettings } from '@/lib/settings-actions';
+import { canModerateContent } from '@/lib/permissions';
+
+const navLinks = [
+  { href: '/', label: 'Home' },
+  { href: '/feed', label: 'Feed' },
+  { href: '/classroom', label: 'Classroom' },
+  { href: '/calendar', label: 'Calendar' },
+  { href: '/leaderboard', label: 'Leaderboard' },
+  { href: '/members', label: 'Members' },
+];
+
+export async function Sidebar() {
+  const [settings, session] = await Promise.all([
+    getCommunitySettings(),
+    getServerSession(authOptions),
+  ]);
+
+  const userRole = session?.user?.role;
+  const showAdminLink = userRole && canModerateContent(userRole);
+
+  return (
+    <aside className="w-64 border-r border-border bg-muted/30 flex flex-col">
+      {/* Logo/Brand */}
+      <div className="h-16 flex items-center px-6 border-b border-border gap-3">
+        {settings.communityLogo && (
+          <Image
+            src={settings.communityLogo}
+            alt={`${settings.communityName} logo`}
+            width={32}
+            height={32}
+            className="w-8 h-8 rounded-md object-cover"
+          />
+        )}
+        <span className="text-xl font-bold text-foreground truncate">
+          {settings.communityName}
+        </span>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 p-4 space-y-1">
+        {navLinks.map((link) => (
+          <NavLink key={link.href} {...link} />
+        ))}
+        {showAdminLink && <NavLink href="/admin" label="Admin" />}
+      </nav>
+
+      {/* User info from session */}
+      <SidebarUserMenu />
+    </aside>
+  );
+}

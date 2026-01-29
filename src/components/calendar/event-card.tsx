@@ -1,0 +1,94 @@
+'use client';
+
+import Link from 'next/link';
+import Image from 'next/image';
+import { EventTime } from './event-time';
+import type { EventOccurrence } from '@/lib/event-actions';
+
+interface EventCardProps {
+  occurrence: EventOccurrence;
+}
+
+export function EventCard({ occurrence }: EventCardProps) {
+  const { event } = occurrence;
+
+  return (
+    <Link
+      href={`/events/${event.id}`}
+      className="block bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-sm transition-all"
+    >
+      <div className="flex gap-4">
+        {/* Cover image thumbnail */}
+        {event.coverImage && (
+          <div className="flex-shrink-0 w-24 h-24 relative rounded-md overflow-hidden bg-gray-100">
+            <Image
+              src={event.coverImage}
+              alt={event.title}
+              fill
+              className="object-cover"
+            />
+          </div>
+        )}
+
+        <div className="flex-1 min-w-0">
+          {/* Title and badges */}
+          <div className="flex items-start gap-2 mb-2">
+            <h3 className="font-semibold text-gray-900 truncate flex-1">
+              {event.title}
+            </h3>
+            {event.recurrence !== 'NONE' && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 flex-shrink-0">
+                {event.recurrence === 'WEEKLY' ? 'Weekly' : 'Monthly'}
+              </span>
+            )}
+          </div>
+
+          {/* Date/time */}
+          <div className="mb-2">
+            <EventTime start={event.startTime} end={event.endTime} />
+          </div>
+
+          {/* Location */}
+          {event.location && (
+            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-4 h-4 flex-shrink-0"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                />
+              </svg>
+              <span className="truncate">
+                {event.locationUrl ? (
+                  <span
+                    className="text-blue-600 hover:underline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.open(event.locationUrl!, '_blank');
+                    }}
+                  >
+                    {event.location}
+                  </span>
+                ) : (
+                  event.location
+                )}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+}

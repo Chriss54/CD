@@ -1,0 +1,128 @@
+'use server';
+
+import { getServerSession } from 'next-auth';
+import { revalidatePath } from 'next/cache';
+import { authOptions } from '@/lib/auth';
+import db from '@/lib/db';
+import { postSchema } from '@/lib/validations/post';
+import { awardPoints } from '@/lib/gamification-actions';
+import { extractPlainText } from '@/lib/tiptap-utils';
+import type { Prisma } from '@/generated/prisma/client';
+
+export async function createPost(formData: FormData) {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return { error: 'Not authenticated' };
+  }
+
+  const validatedFields = postSchema.safeParse({
+    content: formData.get('content'),
+    embeds: formData.get('embeds'),
+  });
+
+  if (!validatedFields.success) {
+    return { error: validatedFields.error.flatten().fieldErrors };
+  }
+
+  const { content, embeds } = validatedFields.data;
+
+  // Extract plain text for full-text search indexing
+  const plainText = extractPlainText(content);
+
+  await db.post.create({
+    data: {
+      content: content as Prisma.InputJsonValue,
+      embeds: embeds as Prisma.InputJsonValue,
+      plainText,
+      authorId: session.user.id,
+    },
+  });
+
+  // Award points for creating a post
+  await awardPoints(session.user.id, 'POST_CREATED');
+
+  revalidatePath('/feed');
+
+  return { success: true };
+}
+
+export async function updatePost(postId: string, formData: FormData) {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return { error: 'Not authenticated' };
+  }
+
+  // Fetch post and verify ownership
+  const post = await db.post.findUnique({
+    where: { id: postId },
+    select: { authorId: true },
+  });
+
+  if (!post) {
+    return { error: 'Post not found' };
+  }
+
+  if (post.authorId !== session.user.id) {
+    return { error: 'Not authorized' };
+  }
+
+  const validatedFields = postSchema.safeParse({
+    content: formData.get('content'),
+    embeds: formData.get('embeds'),
+  });
+
+  if (!validatedFields.success) {
+    return { error: validatedFields.error.flatten().fieldErrors };
+  }
+
+  const { content, embeds } = validatedFields.data;
+
+  // Extract plain text for full-text search indexing
+  const plainText = extractPlainText(content);
+
+  await db.post.update({
+    where: { id: postId },
+    data: {
+      content: content as Prisma.InputJsonValue,
+      embeds: embeds as Prisma.InputJsonValue,
+      plainText,
+    },
+  });
+
+  revalidatePath('/feed');
+  revalidatePath(`/feed/${postId}`);
+
+  return { success: true };
+}
+
+export async function deletePost(postId: string) {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return { error: 'Not authenticated' };
+  }
+
+  // Fetch post and verify ownership
+  const post = await db.post.findUnique({
+    where: { id: postId },
+    select: { authorId: true },
+  });
+
+  if (!post) {
+    return { error: 'Post not found' };
+  }
+
+  if (post.authorId !== session.user.id) {
+    return { error: 'Not authorized' };
+  }
+
+  await db.post.delete({
+    where: { id: postId },
+  });
+
+  revalidatePath('/feed');
+
+  return { success: true };
+}

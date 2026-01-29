@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+/* Custom theme tokens - replaces tailwind.config.js */
+@theme {
+  --color-primary: #1f2937;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #6b7280;
+  --color-background: #f8f9fa;
+  --color-foreground: #1f2937;
+  --color-muted: #f3f4f6;
+  --color-muted-foreground: #6b7280;
+  --color-border: #e5e7eb;
+  --color-destructive: #ef4444;
+  --color-success: #22c55e;
+
+  /* Category colors */
+  --color-category-general: #6b7280;
+  --color-category-announcements: #ef4444;
+  --color-category-introductions: #22c55e;
+  --color-category-questions: #3b82f6;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --radius-default: 0.75rem;
+}
+
+/* Base styles */
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+/* Search result highlighting */
+mark {
+  background-color: rgb(254 240 138); /* yellow-200 */
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* Prose styling adjustments */
+.prose p {
+  margin-bottom: 0.5rem;
+}
+
+.prose p:last-child {
+  margin-bottom: 0;
+}
+

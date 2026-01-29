@@ -1,0 +1,355 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Connection URL configured in prisma.config.ts
+}
+
+// Foundation User model - expanded in later phases
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  image          String?
+  hashedPassword String?
+  bio            String?   @db.VarChar(500)
+  points         Int       @default(0)
+  level          Int       @default(1)
+  role           String    @default("member") // member, moderator, admin, owner
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Full-text search vector (auto-generated from name + bio)
+  searchVector   Unsupported("tsvector")?
+
+  posts          Post[]
+  comments       Comment[]
+  postLikes      PostLike[]
+  commentLikes   CommentLike[]
+  enrollments    Enrollment[]
+  lessonProgress LessonProgress[]
+  events         Event[]
+  pointsEvents   PointsEvent[]
+  bans           Ban[]      @relation("UserBans")
+  bannedUsers    Ban[]      @relation("BannedByUser")
+  auditLogs      AuditLog[]
+  membership     Membership?
+
+  @@index([email])
+  @@index([points])
+  @@index([searchVector], type: Gin)
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  color     String   // hex color, e.g., "#6366f1"
+
+  posts     Post[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id         String    @id @default(cuid())
+  content    Json      // Tiptap JSON document
+  plainText  String?   @db.Text // Extracted text for full-text search
+  embeds     Json      @default("[]") // Array of VideoEmbed objects
+  authorId   String
+  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  comments   Comment[]
+  likes      PostLike[]
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  // Full-text search vector (auto-generated from plainText)
+  searchVector Unsupported("tsvector")?
+
+  @@index([authorId])
+  @@index([categoryId])
+  @@index([createdAt(sort: Desc)])
+  @@index([searchVector], type: Gin)
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.VarChar(2000) // plain text, no Tiptap
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  likes     CommentLike[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([postId])
+  @@index([authorId])
+  @@index([createdAt(sort: Desc)])
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model CommentLike {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commentId String
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, commentId])
+  @@index([commentId])
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+  @@index([email])
+  @@index([token])
+}
+
+// Classroom models - Phase 06
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Course {
+  id          String       @id @default(cuid())
+  title       String
+  description String?      @db.Text
+  status      CourseStatus @default(DRAFT)
+
+  modules     Module[]
+  enrollments Enrollment[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Full-text search vector (auto-generated from title + description)
+  searchVector Unsupported("tsvector")?
+
+  @@index([status])
+  @@index([searchVector], type: Gin)
+}
+
+model Module {
+  id        String   @id @default(cuid())
+  title     String
+  position  Int      // For ordering within course
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  lessons   Lesson[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+  @@index([courseId, position])
+}
+
+// Lesson models - Phase 06-02
+enum LessonStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Lesson {
+  id        String       @id @default(cuid())
+  title     String
+  position  Int          // For ordering within module
+  status    LessonStatus @default(DRAFT)
+  videoUrl  String?      // Optional video embed at top
+  content   Json         // Tiptap JSON document
+  moduleId  String
+  module    Module       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  attachments Attachment[]
+  progress    LessonProgress[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([moduleId])
+  @@index([moduleId, position])
+}
+
+model Attachment {
+  id        String   @id @default(cuid())
+  name      String   // Original filename
+  url       String   // Supabase storage URL
+  size      Int      // File size in bytes
+  mimeType  String
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([lessonId])
+}
+
+// Classroom Experience models - Phase 07
+model Enrollment {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrolledAt DateTime @default(now())
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model LessonProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+}
+
+// Events Calendar - Phase 08
+enum RecurrenceType {
+  NONE
+  WEEKLY
+  MONTHLY
+}
+
+model Event {
+  id            String         @id @default(cuid())
+  title         String         @db.VarChar(200)
+  description   Json           // Tiptap JSON document
+  startTime     DateTime       @db.Timestamptz(3)
+  endTime       DateTime       @db.Timestamptz(3)
+  location      String?        @db.VarChar(200)
+  locationUrl   String?        @db.VarChar(500)
+  coverImage    String?        // Supabase storage URL
+  recurrence    RecurrenceType @default(NONE)
+  recurrenceEnd DateTime?      @db.Timestamptz(3)
+
+  createdById   String
+  createdBy     User           @relation(fields: [createdById], references: [id])
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([startTime])
+  @@index([createdById])
+}
+
+// Gamification - Phase 09
+model PointsEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  action    String   // "POST_CREATED", "COMMENT_CREATED", "LIKE_RECEIVED", "LESSON_COMPLETED"
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+}
+
+// Admin & Moderation - Phase 10
+model Ban {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation("UserBans", fields: [userId], references: [id], onDelete: Cascade)
+  reason    String    @db.VarChar(500)
+  expiresAt DateTime? @db.Timestamptz(3) // null = permanent
+  bannedById String
+  bannedBy  User      @relation("BannedByUser", fields: [bannedById], references: [id])
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String   // "BAN_USER", "UNBAN_USER", "DELETE_POST", "DELETE_COMMENT", "CHANGE_ROLE", etc.
+  targetId  String?  // ID of affected resource (user, post, comment)
+  targetType String? // "USER", "POST", "COMMENT"
+  details   Json?    // Additional context (old role, new role, reason, etc.)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([targetId])
+  @@index([createdAt(sort: Desc)])
+}
+
+model CommunitySettings {
+  id                    String   @id @default("singleton")
+  communityName         String   @default("Community")
+  communityDescription  String?  @db.Text
+  communityLogo         String?  // Supabase storage URL
+  welcomeMessage        String?  @db.Text
+  registrationOpen      Boolean  @default(true)
+  postingEnabled        Boolean  @default(true)
+  commentsEnabled       Boolean  @default(true)
+  updatedAt             DateTime @updatedAt
+}
+
+// Payments - Phase 11
+enum MembershipStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+model Membership {
+  id        String           @id @default(cuid())
+  userId    String           @unique
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    MembershipStatus @default(ACTIVE)
+  planName  String           @default("Community Membership")
+  paidAt    DateTime         @default(now())
+  expiresAt DateTime?        // null = no expiration (for mock payments)
+
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
