@@ -1,18 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { parseVideoUrl, type VideoEmbed } from '@/lib/video-utils';
 
 interface VideoInputProps {
   onAdd: (embed: VideoEmbed) => void;
+  onPendingChange?: (hasPending: boolean) => void;
   disabled?: boolean;
   compact?: boolean;
 }
 
-export function VideoInput({ onAdd, disabled, compact }: VideoInputProps) {
+export function VideoInput({ onAdd, onPendingChange, disabled, compact }: VideoInputProps) {
   const [url, setUrl] = useState('');
   const [showInput, setShowInput] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Notify parent when there's a pending URL
+  useEffect(() => {
+    onPendingChange?.(showInput && url.trim().length > 0);
+  }, [url, showInput, onPendingChange]);
 
   const handleAdd = () => {
     const embed = parseVideoUrl(url);
@@ -71,38 +77,47 @@ export function VideoInput({ onAdd, disabled, compact }: VideoInputProps) {
       );
     }
 
+    // Expanded state: full width input with buttons on new line
     return (
-      <div className="flex gap-2 items-center">
-        <input
-          type="url"
-          value={url}
-          onChange={(e) => {
-            setUrl(e.target.value);
-            if (error) setError(null);
-          }}
-          onKeyDown={handleKeyDown}
-          placeholder="Video URL einfügen..."
-          disabled={disabled}
-          autoFocus
-          className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent disabled:opacity-50"
-        />
-        <button
-          type="button"
-          onClick={handleAdd}
-          disabled={disabled || !url.trim()}
-          className="px-4 py-2 text-sm font-medium rounded-full bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Hinzufügen
-        </button>
-        <button
-          type="button"
-          onClick={() => { setShowInput(false); setUrl(''); setError(null); }}
-          className="text-gray-400 hover:text-gray-600"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-          </svg>
-        </button>
+      <div className="space-y-2">
+        {/* URL input - full width */}
+        <div className="flex gap-2 items-center">
+          <input
+            type="url"
+            value={url}
+            onChange={(e) => {
+              setUrl(e.target.value);
+              if (error) setError(null);
+            }}
+            onKeyDown={handleKeyDown}
+            placeholder="Video URL einfügen (YouTube, Vimeo, Loom)..."
+            disabled={disabled}
+            autoFocus
+            className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent disabled:opacity-50"
+          />
+          <button
+            type="button"
+            onClick={() => { setShowInput(false); setUrl(''); setError(null); }}
+            className="shrink-0 text-gray-400 hover:text-gray-600 p-1"
+            aria-label="Schließen"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        {/* Add button */}
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={disabled || !url.trim()}
+            className="px-4 py-2 text-sm font-medium rounded-full bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Hinzufügen
+          </button>
+        </div>
+        {error && <p className="text-sm text-red-600">{error}</p>}
       </div>
     );
   }

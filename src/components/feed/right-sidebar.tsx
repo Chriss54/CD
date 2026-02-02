@@ -14,7 +14,7 @@ export async function RightSidebar() {
     ]);
 
     return (
-        <aside className="w-72 shrink-0 space-y-4">
+        <aside className="hidden lg:block w-72 shrink-0 space-y-4">
             {/* Members count */}
             <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
                 <div className="flex items-center gap-3">

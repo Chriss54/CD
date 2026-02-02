@@ -37,6 +37,7 @@ export function CreatePostModal({ categories, userImage, userName }: CreatePostM
     const [embeds, setEmbeds] = useState<VideoEmbed[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [hasPendingVideo, setHasPendingVideo] = useState(false);
 
     // Set default category when modal opens
     useEffect(() => {
@@ -186,16 +187,18 @@ export function CreatePostModal({ categories, userImage, userName }: CreatePostM
                                 )}
                             </div>
 
-                            {/* Footer */}
-                            <div className="flex items-center justify-between p-5 border-t border-gray-100">
-                                <div className="flex gap-2">
-                                    <VideoInput
-                                        onAdd={(embed) => setEmbeds([...embeds, embed])}
-                                        disabled={isSubmitting}
-                                        compact
-                                    />
-                                </div>
-                                <div className="flex gap-3">
+                            {/* Footer with action buttons */}
+                            <div className="p-5 border-t border-gray-100 space-y-3">
+                                {/* Video input - takes full width when expanded */}
+                                <VideoInput
+                                    onAdd={(embed) => setEmbeds([...embeds, embed])}
+                                    onPendingChange={setHasPendingVideo}
+                                    disabled={isSubmitting}
+                                    compact
+                                />
+
+                                {/* Action buttons row */}
+                                <div className="flex items-center justify-between">
                                     <button
                                         type="button"
                                         onClick={() => setIsOpen(false)}
@@ -205,7 +208,7 @@ export function CreatePostModal({ categories, userImage, userName }: CreatePostM
                                     </button>
                                     <button
                                         type="submit"
-                                        disabled={isSubmitting || !content}
+                                        disabled={isSubmitting || !content || hasPendingVideo}
                                         className="px-5 py-2 rounded-full text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                     >
                                         {isSubmitting ? 'Wird gepostet...' : 'Posten'}

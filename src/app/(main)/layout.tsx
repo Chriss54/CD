@@ -5,7 +5,7 @@ import { TopNav } from '@/components/layout/top-nav';
 import { StickyHeaderWrapper } from '@/components/layout/sticky-header-wrapper';
 import { PaywallModal } from '@/components/paywall/paywall-modal';
 import { Toaster } from 'sonner';
-import { canModerateContent } from '@/lib/permissions';
+import { canEditSettings } from '@/lib/permissions';
 
 export default async function MainLayout({
   children,
@@ -18,7 +18,7 @@ export default async function MainLayout({
   // Paywall only affects authenticated users without active membership
   const showPaywall = session?.user && !session.user.hasMembership;
   const userRole = session?.user?.role;
-  const showAdminLink = userRole && canModerateContent(userRole);
+  const showAdminLink = userRole && canEditSettings(userRole);
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -30,7 +30,7 @@ export function CategoriesSidebar({ categories, activeCategory }: CategoriesSide
     };
 
     return (
-        <aside className="w-64 shrink-0">
+        <aside className="hidden lg:block w-64 shrink-0">
             <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
                 <h2 className="text-base font-semibold text-gray-900 mb-4">Categories</h2>
 

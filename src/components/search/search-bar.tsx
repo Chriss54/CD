@@ -3,7 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 
-export function SearchBar() {
+interface SearchBarProps {
+  compact?: boolean;
+}
+
+export function SearchBar({ compact }: SearchBarProps) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
@@ -28,15 +32,20 @@ export function SearchBar() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className={compact ? 'w-full' : ''}>
       <input
         ref={inputRef}
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search... ⌘K"
-        className="w-64 px-4 py-2 text-sm rounded-full bg-gray-100 text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:outline-none border-0"
+        placeholder={compact ? 'Suche...' : 'Search... ⌘K'}
+        className={`
+          px-3 py-2 text-sm rounded-full bg-gray-100 text-gray-900 placeholder:text-gray-500 
+          focus:ring-2 focus:ring-blue-500 focus:outline-none border-0
+          ${compact ? 'w-full' : 'w-64 px-4'}
+        `}
       />
     </form>
   );
 }
+

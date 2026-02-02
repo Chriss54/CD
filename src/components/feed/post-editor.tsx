@@ -30,9 +30,8 @@ export function PostEditor({ content, onChange, placeholder }: PostEditorProps) 
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`px-2 py-1 rounded hover:bg-gray-100 ${
-            editor.isActive('bold') ? 'bg-gray-200 font-bold' : ''
-          }`}
+          className={`px-2 py-1 rounded hover:bg-gray-100 ${editor.isActive('bold') ? 'bg-gray-200 font-bold' : ''
+            }`}
           aria-label="Bold"
         >
           B
@@ -40,9 +39,8 @@ export function PostEditor({ content, onChange, placeholder }: PostEditorProps) 
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`px-2 py-1 rounded hover:bg-gray-100 ${
-            editor.isActive('italic') ? 'bg-gray-200 italic' : ''
-          }`}
+          className={`px-2 py-1 rounded hover:bg-gray-100 ${editor.isActive('italic') ? 'bg-gray-200 italic' : ''
+            }`}
           aria-label="Italic"
         >
           I
@@ -52,7 +50,7 @@ export function PostEditor({ content, onChange, placeholder }: PostEditorProps) 
       {/* Editor content */}
       <EditorContent
         editor={editor}
-        className="prose prose-sm max-w-none min-h-[100px] focus:outline-none"
+        className="prose prose-sm max-w-none min-h-[100px] [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[100px] [&_.ProseMirror:focus]:outline-none"
         placeholder={placeholder}
       />
     </div>

@@ -44,8 +44,8 @@ export function getThumbnailUrl(embed: VideoEmbed): string {
       // Vimeo requires API call for thumbnail, return placeholder for now
       return '/images/video-placeholder.svg';
     case 'loom':
-      // Loom thumbnail needs API, return placeholder for now
-      return '/images/video-placeholder.svg';
+      // Loom provides thumbnails via CDN
+      return `https://cdn.loom.com/sessions/thumbnails/${embed.id}-with-play.gif`;
     default:
       return '/images/video-placeholder.svg';
   }
