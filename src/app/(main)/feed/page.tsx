@@ -7,6 +7,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { CategoriesSidebar } from '@/components/feed/categories-sidebar';
 import { RightSidebar } from '@/components/feed/right-sidebar';
 import { CreatePostModal } from '@/components/feed/create-post-modal';
+import { translatePostsForUser } from '@/lib/translation';
 
 const POSTS_PER_PAGE = 10;
 
@@ -22,6 +23,14 @@ async function FeedContent({ searchParams }: FeedPageProps) {
 
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
+
+  // Get user's language preference
+  const userLanguage = currentUserId
+    ? (await db.user.findUnique({
+      where: { id: currentUserId },
+      select: { languageCode: true },
+    }))?.languageCode || 'en'
+    : 'en';
 
   // Build where clause for category filter
   const whereClause = category ? { categoryId: category } : {};
@@ -60,13 +69,16 @@ async function FeedContent({ searchParams }: FeedPageProps) {
 
   const totalPages = Math.ceil(total / POSTS_PER_PAGE);
 
-  // Transform posts to add isLiked boolean
+  // Transform posts to add isLiked boolean and prepare for translation
   const postsWithLikeStatus = posts.map((post) => ({
     ...post,
     isLiked: 'likes' in post && Array.isArray(post.likes) && post.likes.length > 0,
     likeCount: post._count.likes,
     commentCount: post._count.comments,
   }));
+
+  // Translate posts to user's preferred language (server-side)
+  const translatedPosts = await translatePostsForUser(postsWithLikeStatus, userLanguage);
 
   return (
     <div className="flex gap-6 max-w-7xl mx-auto">
@@ -83,13 +95,13 @@ async function FeedContent({ searchParams }: FeedPageProps) {
         />
 
         {/* Posts list */}
-        {postsWithLikeStatus.length === 0 ? (
+        {translatedPosts.length === 0 ? (
           <div className="bg-white rounded-xl p-12 text-center text-gray-500 shadow-sm border border-gray-100">
-            <p>Noch keine Posts. Sei der Erste, der etwas teilt!</p>
+            <p>No posts yet. Be the first to share something!</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {postsWithLikeStatus.map((post) => (
+            {translatedPosts.map((post) => (
               <PostCard
                 key={post.id}
                 post={post}
@@ -138,4 +150,3 @@ export default function FeedPage(props: FeedPageProps) {
     </Suspense>
   );
 }
-

@@ -13,6 +13,7 @@ import { generateHTML } from '@tiptap/html';
 import StarterKit from '@tiptap/starter-kit';
 import { VideoEmbedPlayer } from '@/components/video/video-embed';
 import type { VideoEmbed } from '@/lib/video-utils';
+import { translatePostForUser, translateCommentsForUser } from '@/lib/translation';
 
 interface PostDetailPageProps {
   params: Promise<{ id: string }>;
@@ -72,9 +73,40 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     },
   });
 
+  // Get user's language preference for translation
+  const userLanguage = currentUserId
+    ? (await db.user.findUnique({
+      where: { id: currentUserId },
+      select: { languageCode: true },
+    }))?.languageCode || 'en'
+    : 'en';
+
+  // Translate post and comments to user's preferred language
+  const translatedPost = await translatePostForUser({
+    id: post.id,
+    title: post.title,
+    plainText: post.plainText,
+    languageCode: post.languageCode,
+  }, userLanguage);
+
+  const translatedComments = await translateCommentsForUser(
+    comments.map((c) => ({
+      id: c.id,
+      content: c.content,
+      languageCode: c.languageCode,
+    })),
+    userLanguage
+  );
+
+  // Create a map for translated comment content
+  const translatedContentMap = new Map<string, string>();
+  translatedComments.forEach((c) => {
+    translatedContentMap.set(c.id, c.content);
+  });
+
   const formattedComments = comments.map((comment) => ({
     id: comment.id,
-    content: comment.content,
+    content: translatedContentMap.get(comment.id) || comment.content,
     authorId: comment.authorId,
     authorName: comment.author.name,
     authorImage: comment.author.image,
@@ -139,8 +171,8 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           </div>
 
           {/* Post title */}
-          {post.title && (
-            <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
+          {(translatedPost.title || post.title) && (
+            <h1 className="text-xl font-bold text-gray-900 mb-2">{translatedPost.title || post.title}</h1>
           )}
 
           {/* Post content */}
