@@ -10,6 +10,7 @@ import { updateProfile } from '@/lib/profile-actions';
 import { Button } from '@/components/ui/button';
 import { AvatarUpload } from '@/components/profile/avatar-upload';
 import { BioTextarea } from '@/components/profile/bio-textarea';
+import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES } from '@/lib/translation';
 
 // Use input type for form fields (before transform/default)
 type ProfileFormValues = z.input<typeof profileSchema>;
@@ -20,6 +21,7 @@ interface ProfileFormProps {
     name: string | null;
     bio: string | null;
     image: string | null;
+    languageCode: string | null;
   };
 }
 
@@ -38,6 +40,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
     defaultValues: {
       name: user.name || '',
       bio: user.bio || '',
+      languageCode: user.languageCode || 'en',
     },
   });
 
@@ -50,6 +53,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
       const formData = new FormData();
       formData.append('name', data.name);
       formData.append('bio', data.bio || '');
+      if (data.languageCode) {
+        formData.append('languageCode', data.languageCode);
+      }
 
       const result = await updateProfile(formData);
 
@@ -108,6 +114,29 @@ export function ProfileForm({ user }: ProfileFormProps) {
           defaultValue={user.bio || ''}
           error={errors.bio?.message}
         />
+
+        <div>
+          <label htmlFor="languageCode" className="block text-sm font-medium mb-1">
+            Preferred Language
+          </label>
+          <select
+            {...register('languageCode')}
+            id="languageCode"
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+          >
+            {SUPPORTED_LANGUAGES.map((code) => (
+              <option key={code} value={code}>
+                {LANGUAGE_NAMES[code]}
+              </option>
+            ))}
+          </select>
+          <p className="text-gray-500 text-xs mt-1">
+            Content will be automatically translated to your preferred language
+          </p>
+          {errors.languageCode && (
+            <p className="text-red-500 text-sm mt-1">{errors.languageCode.message}</p>
+          )}
+        </div>
 
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? 'Saving...' : 'Save changes'}

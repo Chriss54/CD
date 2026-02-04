@@ -10,6 +10,10 @@ export const profileSchema = z.object({
     .transform((val) => val.replace(/\r\n/g, '\n')) // Normalize newlines before length check
     .pipe(z.string().max(500, 'Bio must be at most 500 characters'))
     .default(''),
+  languageCode: z
+    .string()
+    .length(2, 'Language code must be 2 characters')
+    .optional(),
 });
 
 // Input type for forms (bio is optional when submitting)
