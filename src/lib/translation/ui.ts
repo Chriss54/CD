@@ -54,7 +54,7 @@ export async function translateUITexts(
  * Translate an object's string values
  * Useful for translating category objects, etc.
  */
-export async function translateObject<T extends Record<string, unknown>>(
+export async function translateObject<T extends object>(
     obj: T,
     fieldsToTranslate: (keyof T)[],
     sourceLanguage: string,
@@ -85,7 +85,7 @@ export async function translateObject<T extends Record<string, unknown>>(
 /**
  * Translate an array of objects
  */
-export async function translateObjects<T extends Record<string, unknown>>(
+export async function translateObjects<T extends object>(
     objects: T[],
     fieldsToTranslate: (keyof T)[],
     sourceLanguage: string,

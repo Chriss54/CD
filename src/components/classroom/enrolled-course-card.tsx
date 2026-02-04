@@ -13,11 +13,19 @@ export interface EnrolledCourse {
   nextLessonId: string | null;
 }
 
-interface EnrolledCourseCardProps {
-  course: EnrolledCourse;
+interface EnrolledCardUI {
+  lessons: string;
+  completed: string;
+  continueLearning: string;
+  startCourse: string;
 }
 
-export function EnrolledCourseCard({ course }: EnrolledCourseCardProps) {
+interface EnrolledCourseCardProps {
+  course: EnrolledCourse;
+  ui: EnrolledCardUI;
+}
+
+export function EnrolledCourseCard({ course, ui }: EnrolledCourseCardProps) {
   const isComplete = course.progressPercent === 100;
 
   return (
@@ -44,11 +52,11 @@ export function EnrolledCourseCard({ course }: EnrolledCourseCardProps) {
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>
-              {course.completedLessons}/{course.totalLessons} lessons
+              {course.completedLessons}/{course.totalLessons} {ui.lessons}
             </span>
             {isComplete && (
               <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded font-medium">
-                Completed
+                {ui.completed}
               </span>
             )}
           </div>
@@ -57,14 +65,14 @@ export function EnrolledCourseCard({ course }: EnrolledCourseCardProps) {
         {!isComplete && course.nextLessonId && (
           <Button asChild size="sm" className="w-full">
             <Link href={`/classroom/courses/${course.id}/lessons/${course.nextLessonId}`}>
-              Continue Learning
+              {ui.continueLearning}
             </Link>
           </Button>
         )}
         {!isComplete && !course.nextLessonId && course.totalLessons > 0 && (
           <Button asChild size="sm" variant="outline" className="w-full">
             <Link href={`/classroom/courses/${course.id}`}>
-              Start Course
+              {ui.startCourse}
             </Link>
           </Button>
         )}
