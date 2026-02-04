@@ -8,6 +8,7 @@ import { CategoriesSidebar } from '@/components/feed/categories-sidebar';
 import { RightSidebar } from '@/components/feed/right-sidebar';
 import { CreatePostModal } from '@/components/feed/create-post-modal';
 import { translatePostsForUser } from '@/lib/translation';
+import { getMessages } from '@/lib/i18n';
 
 const POSTS_PER_PAGE = 10;
 
@@ -80,10 +81,13 @@ async function FeedContent({ searchParams }: FeedPageProps) {
   // Translate posts to user's preferred language (server-side)
   const translatedPosts = await translatePostsForUser(postsWithLikeStatus, userLanguage);
 
+  // Get translated UI messages
+  const messages = getMessages(userLanguage);
+
   return (
     <div className="flex gap-6 max-w-7xl mx-auto">
       {/* Left sidebar - Categories */}
-      <CategoriesSidebar categories={categories} activeCategory={category} />
+      <CategoriesSidebar categories={categories} activeCategory={category} messages={messages} />
 
       {/* Center - Posts feed */}
       <div className="flex-1 min-w-0 space-y-4">
@@ -127,7 +131,7 @@ async function FeedContent({ searchParams }: FeedPageProps) {
       </div>
 
       {/* Right sidebar - Members & Leaderboard */}
-      <RightSidebar />
+      <RightSidebar messages={messages} />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import type { Messages } from '@/lib/i18n/messages/en';
 
 interface Category {
     id: string;
@@ -12,9 +13,10 @@ interface Category {
 interface CategoriesSidebarProps {
     categories: Category[];
     activeCategory: string | null;
+    messages: Messages;
 }
 
-export function CategoriesSidebar({ categories, activeCategory }: CategoriesSidebarProps) {
+export function CategoriesSidebar({ categories, activeCategory, messages }: CategoriesSidebarProps) {
     const searchParams = useSearchParams();
 
     // Build URL with category filter
@@ -32,7 +34,7 @@ export function CategoriesSidebar({ categories, activeCategory }: CategoriesSide
     return (
         <aside className="hidden lg:block w-64 shrink-0">
             <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                <h2 className="text-base font-semibold text-gray-900 mb-4">Categories</h2>
+                <h2 className="text-base font-semibold text-gray-900 mb-4">{messages.categories.title}</h2>
 
                 <nav className="space-y-1">
                     {/* All Posts */}
@@ -46,7 +48,7 @@ export function CategoriesSidebar({ categories, activeCategory }: CategoriesSide
                             }
             `}
                     >
-                        All Posts
+                        {messages.categories.allPosts}
                     </Link>
 
                     {/* Category list */}
@@ -74,3 +76,4 @@ export function CategoriesSidebar({ categories, activeCategory }: CategoriesSide
         </aside>
     );
 }
+

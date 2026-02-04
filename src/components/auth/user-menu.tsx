@@ -2,8 +2,13 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import { useState, useRef, useEffect } from 'react';
+import type { Messages } from '@/lib/i18n/messages/en';
 
-export function UserMenu() {
+interface UserMenuProps {
+  messages: Messages;
+}
+
+export function UserMenu({ messages }: UserMenuProps) {
   const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -59,13 +64,13 @@ export function UserMenu() {
             className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             onClick={() => setIsOpen(false)}
           >
-            Edit Profile
+            {messages.auth.editProfile}
           </a>
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
             className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
           >
-            Sign out
+            {messages.auth.signOut}
           </button>
         </div>
       )}

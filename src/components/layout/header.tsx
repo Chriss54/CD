@@ -3,8 +3,13 @@ import Link from 'next/link';
 import { UserMenu } from '@/components/auth/user-menu';
 import { SearchBar } from '@/components/search/search-bar';
 import { getCommunitySettings } from '@/lib/settings-actions';
+import type { Messages } from '@/lib/i18n/messages/en';
 
-export async function Header() {
+interface HeaderProps {
+  messages: Messages;
+}
+
+export async function Header({ messages }: HeaderProps) {
   const settings = await getCommunitySettings();
 
   return (
@@ -44,7 +49,7 @@ export async function Header() {
 
         {/* Desktop: Search centered */}
         <div className="hidden lg:flex flex-1 min-w-0 justify-center">
-          <SearchBar />
+          <SearchBar placeholder={messages.search.placeholder} />
         </div>
 
         {/* Right column - Fixed width on mobile to match nav bell area */}
@@ -64,7 +69,7 @@ export async function Header() {
             {/* <span className="absolute -top-0.5 -right-0.5 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-medium">3</span> */}
           </button>
           {/* User menu */}
-          <UserMenu />
+          <UserMenu messages={messages} />
         </div>
       </div>
     </header>

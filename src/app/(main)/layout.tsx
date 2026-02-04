@@ -6,6 +6,8 @@ import { StickyHeaderWrapper } from '@/components/layout/sticky-header-wrapper';
 import { PaywallModal } from '@/components/paywall/paywall-modal';
 import { Toaster } from 'sonner';
 import { canEditSettings } from '@/lib/permissions';
+import db from '@/lib/db';
+import { getMessages } from '@/lib/i18n';
 
 export default async function MainLayout({
   children,
@@ -13,6 +15,18 @@ export default async function MainLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
+
+  // Get user's language preference
+  const userId = session?.user?.id;
+  const userLanguage = userId
+    ? (await db.user.findUnique({
+      where: { id: userId },
+      select: { languageCode: true },
+    }))?.languageCode || 'en'
+    : 'en';
+
+  // Get translated messages
+  const messages = getMessages(userLanguage);
 
   // Users without session are redirected by middleware to /login
   // Paywall only affects authenticated users without active membership
@@ -23,8 +37,8 @@ export default async function MainLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       <StickyHeaderWrapper
-        header={<Header />}
-        nav={<TopNav showAdminLink={showAdminLink} />}
+        header={<Header messages={messages} />}
+        nav={<TopNav showAdminLink={showAdminLink} messages={messages} />}
       />
       <main className="py-6 px-4 md:px-8">{children}</main>
       <Toaster position="top-center" richColors />
