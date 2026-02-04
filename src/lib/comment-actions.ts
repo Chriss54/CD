@@ -6,6 +6,7 @@ import { authOptions } from '@/lib/auth';
 import db from '@/lib/db';
 import { commentSchema } from '@/lib/validations/comment';
 import { awardPoints } from '@/lib/gamification-actions';
+import { detectLanguage, hashContent } from '@/lib/translation';
 
 export async function createComment(postId: string, content: string) {
   const session = await getServerSession(authOptions);
@@ -30,9 +31,16 @@ export async function createComment(postId: string, content: string) {
     return { error: 'Post not found' };
   }
 
+  // Detect language and hash content for translation support
+  const commentContent = validatedFields.data.content;
+  const languageCode = await detectLanguage(commentContent);
+  const contentHash = hashContent(commentContent);
+
   await db.comment.create({
     data: {
-      content: validatedFields.data.content,
+      content: commentContent,
+      languageCode,
+      contentHash,
       authorId: session.user.id,
       postId,
     },
