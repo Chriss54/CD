@@ -36,15 +36,15 @@ export default async function MembersPage({ searchParams }: MembersPageProps) {
   const { members, total, totalPages } = await getMembersForAdmin(page, 20);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-bold">Member Management</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Member Management</h1>
         <p className="text-muted-foreground mt-1">
           Manage roles, ban, or remove members from the community
         </p>
       </div>
 
-      <div className="bg-white border rounded-lg p-6">
+      <div>
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-muted-foreground">
             {total} {total === 1 ? 'member' : 'members'} total

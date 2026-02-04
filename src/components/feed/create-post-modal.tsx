@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { PostEditor } from './post-editor';
 import { VideoInput } from '@/components/video/video-input';
 import { VideoEmbedPlayer } from '@/components/video/video-embed';
+import { GifPicker } from '@/components/ui/gif-picker';
 import { createPost } from '@/lib/post-actions';
 import type { VideoEmbed } from '@/types/post';
 import type { MediaUpload } from '@/lib/media-actions';
@@ -38,6 +39,8 @@ export function CreatePostModal({ categories, userImage, userName }: CreatePostM
     const [content, setContent] = useState<object | null>(null);
     const [embeds, setEmbeds] = useState<VideoEmbed[]>([]);
     const [images, setImages] = useState<MediaUpload[]>([]);
+    const [gifs, setGifs] = useState<string[]>([]);
+    const [showGifPicker, setShowGifPicker] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [hasPendingVideo, setHasPendingVideo] = useState(false);
@@ -61,6 +64,7 @@ export function CreatePostModal({ categories, userImage, userName }: CreatePostM
         formData.set('content', JSON.stringify(content));
         formData.set('embeds', JSON.stringify(embeds));
         formData.set('images', JSON.stringify(images.map(img => img.url)));
+        formData.set('gifs', JSON.stringify(gifs));
         if (selectedCategory) {
             formData.set('categoryId', selectedCategory);
         }
@@ -79,6 +83,7 @@ export function CreatePostModal({ categories, userImage, userName }: CreatePostM
         setContent(null);
         setEmbeds([]);
         setImages([]);
+        setGifs([]);
         setSelectedCategory(null);
         setIsSubmitting(false);
         router.refresh();
@@ -90,6 +95,10 @@ export function CreatePostModal({ categories, userImage, userName }: CreatePostM
 
     const removeImage = (index: number) => {
         setImages(images.filter((_, i) => i !== index));
+    };
+
+    const removeGif = (index: number) => {
+        setGifs(gifs.filter((_, i) => i !== index));
     };
 
     const getCategoryStyle = (categoryName: string) => {
@@ -188,8 +197,8 @@ export function CreatePostModal({ categories, userImage, userName }: CreatePostM
                                     </div>
                                 </div>
 
-                                {/* Media thumbnails (videos and images) */}
-                                {(embeds.length > 0 || images.length > 0) && (
+                                {/* Media thumbnails (videos, images, and GIFs) */}
+                                {(embeds.length > 0 || images.length > 0 || gifs.length > 0) && (
                                     <div className="flex flex-wrap gap-2">
                                         {/* Video thumbnails */}
                                         {embeds.map((embed, i) => (
@@ -227,6 +236,24 @@ export function CreatePostModal({ categories, userImage, userName }: CreatePostM
                                                 </button>
                                             </div>
                                         ))}
+                                        {/* GIF thumbnails */}
+                                        {gifs.map((gif, i) => (
+                                            <div key={`gif-${i}`} className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                                                <img
+                                                    src={gif}
+                                                    alt={`GIF ${i + 1}`}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeGif(i)}
+                                                    className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-black/80 text-xs"
+                                                    aria-label="Remove GIF"
+                                                >
+                                                    &times;
+                                                </button>
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
 
@@ -237,14 +264,28 @@ export function CreatePostModal({ categories, userImage, userName }: CreatePostM
 
                             {/* Footer with action buttons */}
                             <div className="p-5 border-t border-gray-100 space-y-3">
-                                {/* Video input - takes full width when expanded */}
-                                <VideoInput
-                                    onAddVideo={(embed) => setEmbeds([...embeds, embed])}
-                                    onAddImage={(image) => setImages([...images, image])}
-                                    onPendingChange={setHasPendingVideo}
-                                    disabled={isSubmitting}
-                                    compact
-                                />
+                                {/* Media inputs row */}
+                                <div className="flex items-center gap-2">
+                                    {/* Video/Image input */}
+                                    <VideoInput
+                                        onAddVideo={(embed) => setEmbeds([...embeds, embed])}
+                                        onAddImage={(image) => setImages([...images, image])}
+                                        onPendingChange={setHasPendingVideo}
+                                        disabled={isSubmitting}
+                                        compact
+                                    />
+
+                                    {/* GIF button */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowGifPicker(true)}
+                                        disabled={isSubmitting}
+                                        className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                                    >
+                                        <span className="text-base">🎬</span>
+                                        GIF
+                                    </button>
+                                </div>
 
                                 {/* Action buttons row */}
                                 <div className="flex items-center justify-between">
@@ -267,6 +308,17 @@ export function CreatePostModal({ categories, userImage, userName }: CreatePostM
                         </form>
                     </div>
                 </div>
+            )}
+
+            {/* GIF Picker Modal */}
+            {showGifPicker && (
+                <GifPicker
+                    onSelect={(gifUrl) => {
+                        setGifs([...gifs, gifUrl]);
+                        setShowGifPicker(false);
+                    }}
+                    onClose={() => setShowGifPicker(false)}
+                />
             )}
         </>
     );

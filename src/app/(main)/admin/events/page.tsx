@@ -28,10 +28,10 @@ export default async function AdminEventsPage() {
   const events = await getEvents();
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Event Management</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">Event Management</h1>
           <p className="text-muted-foreground mt-1">
             Create and manage calendar events
           </p>

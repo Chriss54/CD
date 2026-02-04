@@ -29,7 +29,7 @@ export function CalendarHeader({
         {format(currentMonth, 'MMMM yyyy')}
       </h2>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3 ml-6">
         <button
           onClick={handleToday}
           className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"

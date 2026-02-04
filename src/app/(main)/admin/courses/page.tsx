@@ -27,16 +27,16 @@ export default async function AdminCoursesPage() {
   const courses = await getCourses();
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 p-6">
       <div>
-        <h1 className="text-3xl font-bold">Course Management</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Course Management</h1>
         <p className="text-muted-foreground mt-1">
           Create and manage classroom courses
         </p>
       </div>
 
       {/* Course creation form */}
-      <div className="bg-white border rounded-lg p-4">
+      <div className="border rounded-lg p-4">
         <h2 className="text-lg font-medium mb-4">Create Course</h2>
         <CourseForm />
       </div>

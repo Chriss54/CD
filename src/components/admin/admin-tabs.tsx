@@ -69,7 +69,7 @@ export function AdminTabs({ role }: AdminTabsProps) {
   const visibleTabs = tabs.filter((tab) => tab.canAccess(role));
 
   return (
-    <nav className="border-b bg-white">
+    <nav className="border-b border-gray-200 bg-white">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex gap-1 -mb-px overflow-x-auto">
           {visibleTabs.map((tab) => {

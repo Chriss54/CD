@@ -35,15 +35,15 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
   const page = Math.max(1, parseInt(params.page || '1', 10));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-bold">Post Moderation</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Post Moderation</h1>
         <p className="text-muted-foreground mt-1">
           Review, edit, and delete posts. Edits are silent (no indicator shown to users).
         </p>
       </div>
 
-      <div className="bg-white border rounded-lg">
+      <div>
         <Suspense
           fallback={
             <div className="p-8 text-center text-muted-foreground">Loading posts...</div>

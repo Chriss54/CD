@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar } from '@/components/ui/avatar';
+import { GifPicker } from '@/components/ui/gif-picker';
 import { createComment } from '@/lib/comment-actions';
 import dynamic from 'next/dynamic';
 
@@ -311,18 +312,9 @@ function CommentInput({ postId, userImage }: { postId: string; userImage?: strin
         }
     };
 
-    // Sample GIFs (in production, you'd use Tenor/GIPHY API)
-    const sampleGifs = [
-        { id: '1', url: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDJtNmZ5ZWJzY3B0YnBwMHZhMWxqeTQyb2VmenZmYWtlY2tuemcxayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/hvRJCLFzcasrR4ia7z/giphy.gif', alt: 'Wave' },
-        { id: '2', url: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzZhNmZhNGNlZjI1NjY2YWU4ZjQ3NzI4ZjI0N2Q2NjQwYTVlNDZhYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYt5jPR6QX5pnqM/giphy.gif', alt: 'Thumbs up' },
-        { id: '3', url: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcjNhNzZ0aHFuYmRoNWZlOGNhOWppYnd6bzNhN2t5b2R4NXB2Z2F1eCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKSjRrfIPjeiVyE/giphy.gif', alt: 'Clapping' },
-        { id: '4', url: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYjRhNjRhNDU4OWU1ZjE2NzQ0MTI2NjY2NDdhNjQ1NjE2ZjI2NjQ2NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/kyLYXonQYYfwYDIeZl/giphy.gif', alt: 'Celebrate' },
-    ];
-
     const handleGifSelect = (gifUrl: string) => {
         setContent(prev => prev + (prev ? ' ' : '') + `[GIF: ${gifUrl}]`);
         setShowGifModal(false);
-        setGifSearch('');
         inputRef.current?.focus();
     };
 
@@ -498,43 +490,12 @@ function CommentInput({ postId, userImage }: { postId: string; userImage?: strin
                 </div>
             )}
 
-            {/* GIF Modal */}
+            {/* GIF Modal - Using GIPHY-powered GifPicker */}
             {showGifModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowGifModal(false)}>
-                    <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add GIF</h3>
-                        <input
-                            type="text"
-                            value={gifSearch}
-                            onChange={(e) => setGifSearch(e.target.value)}
-                            placeholder="Search for GIFs..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-                            autoFocus
-                        />
-                        <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
-                            {sampleGifs.map((gif) => (
-                                <button
-                                    key={gif.id}
-                                    onClick={() => handleGifSelect(gif.url)}
-                                    className="aspect-video bg-gray-100 rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500 transition-all"
-                                >
-                                    <img src={gif.url} alt={gif.alt} className="w-full h-full object-cover" />
-                                </button>
-                            ))}
-                        </div>
-                        <p className="text-xs text-gray-400 mt-3 text-center">
-                            GIF selection powered by sample data. Full Tenor/GIPHY integration available.
-                        </p>
-                        <div className="flex justify-end mt-4">
-                            <button
-                                onClick={() => setShowGifModal(false)}
-                                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <GifPicker
+                    onSelect={handleGifSelect}
+                    onClose={() => setShowGifModal(false)}
+                />
             )}
         </div>
     );
