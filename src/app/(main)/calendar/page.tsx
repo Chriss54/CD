@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { getEventsForMonth, getUpcomingEvents } from '@/lib/event-actions';
 import { CalendarClient } from './calendar-client';
+import { tMany } from '@/lib/translation/helpers';
 
 async function CalendarData({
   year,
@@ -53,9 +54,14 @@ export default async function CalendarPage() {
   const year = now.getFullYear();
   const month = now.getMonth();
 
+  // Translate all UI text dynamically via DeepL
+  const ui = await tMany({
+    title: 'Calendar',
+  }, 'calendar');
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Calendar</h1>
+      <h1 className="text-3xl font-bold">{ui.title}</h1>
 
       <Suspense fallback={<CalendarSkeleton />}>
         <CalendarData year={year} month={month} />

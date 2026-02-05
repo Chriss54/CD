@@ -19,6 +19,8 @@ interface PostCardProps {
   commentCount?: number;
   isLiked?: boolean;
   category?: { id: string; name: string; color: string } | null;
+  translatedPlainText?: string; // For displaying translated content
+  userLanguage?: string; // User's preferred language to determine if translation applies
 }
 
 function renderContent(content: unknown): string {
@@ -38,9 +40,19 @@ export function PostCard({
   likeCount = 0,
   commentCount = 0,
   isLiked = false,
+  translatedPlainText,
+  userLanguage,
 }: PostCardProps) {
   // Prisma Json fields need cast through unknown for type safety
   const embeds = (post.embeds as unknown as VideoEmbed[]) || [];
+
+  // Show translated plain text when:
+  // 1. translatedPlainText is provided
+  // 2. User's language differs from post's original language
+  const postLanguage = (post as { languageCode?: string }).languageCode || 'en';
+  const shouldShowTranslated = !!translatedPlainText &&
+    !!userLanguage &&
+    postLanguage !== userLanguage;
 
   return (
     <article className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -74,11 +86,17 @@ export function PostCard({
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{post.title}</h3>
         )}
 
-        {/* Post content */}
-        <div
-          className="prose prose-sm max-w-none text-gray-700"
-          dangerouslySetInnerHTML={{ __html: renderContent(post.content) }}
-        />
+        {/* Post content - show translated plain text or original rich content */}
+        {shouldShowTranslated ? (
+          <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap">
+            {translatedPlainText}
+          </div>
+        ) : (
+          <div
+            className="prose prose-sm max-w-none text-gray-700"
+            dangerouslySetInnerHTML={{ __html: renderContent(post.content) }}
+          />
+        )}
 
         {/* Video embeds */}
         {embeds.length > 0 && (

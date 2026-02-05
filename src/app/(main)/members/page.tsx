@@ -1,6 +1,7 @@
 import db from '@/lib/db';
 import { MemberGrid } from '@/components/profile/member-grid';
 import { Pagination } from '@/components/ui/pagination';
+import { tMany } from '@/lib/translation/helpers';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -31,12 +32,22 @@ export default async function MembersPage({ searchParams }: MembersPageProps) {
 
   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 
+  // Translate all UI text dynamically via DeepL
+  const ui = await tMany({
+    title: 'Members',
+    member: 'member',
+    members: 'members',
+    inTheCommunity: 'in the community',
+  }, 'members');
+
+  const memberLabel = total === 1 ? ui.member : ui.members;
+
   return (
     <div className="max-w-6xl mx-auto py-8 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Members</h1>
+        <h1 className="text-3xl font-bold">{ui.title}</h1>
         <p className="text-muted-foreground mt-1">
-          {total} {total === 1 ? 'member' : 'members'} in the community
+          {total} {memberLabel} {ui.inTheCommunity}
         </p>
       </div>
 

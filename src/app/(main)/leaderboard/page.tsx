@@ -6,6 +6,7 @@ import { LeaderboardTabs } from '@/components/leaderboard/leaderboard-tabs';
 import { LeaderboardRow } from '@/components/leaderboard/leaderboard-row';
 import { UserRankCard } from '@/components/leaderboard/user-rank-card';
 import { EmptyState } from '@/components/ui/empty-state';
+import { tMany } from '@/lib/translation/helpers';
 
 interface LeaderboardPageProps {
   searchParams: Promise<{ period?: string }>;
@@ -26,12 +27,29 @@ export default async function LeaderboardPage({ searchParams }: LeaderboardPageP
     userId ? getUserRank(userId, period) : null,
   ]);
 
+  // Translate all UI text dynamically via DeepL
+  const ui = await tMany({
+    title: 'Leaderboard',
+    noRankingsYet: 'No rankings yet',
+    beTheFirst: 'Be the first to earn points!',
+    noActivityThisMonth: 'No activity this month yet.',
+    noActivityToday: 'No activity today yet.',
+  }, 'leaderboard');
+
   // Check if current user is in top 5
   const isInTopFive = currentUserRank && currentUserRank.rank <= 5;
 
+  // Determine empty state description
+  let emptyDescription = ui.beTheFirst;
+  if (period === 'this-month') {
+    emptyDescription = ui.noActivityThisMonth;
+  } else if (period === 'this-day') {
+    emptyDescription = ui.noActivityToday;
+  }
+
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold mb-6">Leaderboard</h1>
+      <h1 className="text-2xl font-bold mb-6">{ui.title}</h1>
 
       {/* Period tabs */}
       <Suspense fallback={<div className="h-10 bg-muted rounded-lg animate-pulse" />}>
@@ -42,12 +60,8 @@ export default async function LeaderboardPage({ searchParams }: LeaderboardPageP
       <div className="mt-6 space-y-2">
         {leaders.length === 0 ? (
           <EmptyState
-            title="No rankings yet"
-            description={
-              period === 'all-time'
-                ? 'Be the first to earn points!'
-                : `No activity ${period === 'this-month' ? 'this month' : 'today'} yet.`
-            }
+            title={ui.noRankingsYet}
+            description={emptyDescription}
           />
         ) : (
           leaders.map((entry) => (

@@ -22,6 +22,7 @@ export default async function EditProfilePage() {
       name: true,
       bio: true,
       image: true,
+      languageCode: true,
     },
   });
 

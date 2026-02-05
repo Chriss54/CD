@@ -7,6 +7,7 @@ import db from '@/lib/db';
 import { postSchema } from '@/lib/validations/post';
 import { awardPoints } from '@/lib/gamification-actions';
 import { extractPlainText } from '@/lib/tiptap-utils';
+import { detectLanguage, hashContent } from '@/lib/translation';
 import type { Prisma } from '@/generated/prisma/client';
 
 export async function createPost(formData: FormData) {
@@ -32,12 +33,18 @@ export async function createPost(formData: FormData) {
   // Extract plain text for full-text search indexing
   const plainText = extractPlainText(content);
 
+  // Detect language and hash content for translation support
+  const languageCode = await detectLanguage(plainText || '');
+  const contentHash = hashContent(plainText || '');
+
   await db.post.create({
     data: {
       title,
       content: content as Prisma.InputJsonValue,
       embeds: embeds as Prisma.InputJsonValue,
       plainText,
+      languageCode,
+      contentHash,
       authorId: session.user.id,
       categoryId: categoryId || null,
     },
@@ -86,12 +93,18 @@ export async function updatePost(postId: string, formData: FormData) {
   // Extract plain text for full-text search indexing
   const plainText = extractPlainText(content);
 
+  // Detect language and hash content for translation support
+  const languageCode = await detectLanguage(plainText || '');
+  const contentHash = hashContent(plainText || '');
+
   await db.post.update({
     where: { id: postId },
     data: {
       content: content as Prisma.InputJsonValue,
       embeds: embeds as Prisma.InputJsonValue,
       plainText,
+      languageCode,
+      contentHash,
     },
   });
 

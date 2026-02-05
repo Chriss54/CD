@@ -17,17 +17,22 @@ export async function updateProfile(formData: FormData) {
   const validatedFields = profileSchema.safeParse({
     name: formData.get('name'),
     bio: formData.get('bio'),
+    languageCode: formData.get('languageCode') || undefined,
   });
 
   if (!validatedFields.success) {
     return { error: validatedFields.error.flatten().fieldErrors };
   }
 
-  const { name, bio } = validatedFields.data;
+  const { name, bio, languageCode } = validatedFields.data;
 
   await db.user.update({
     where: { id: session.user.id },
-    data: { name, bio },
+    data: {
+      name,
+      bio,
+      ...(languageCode && { languageCode }),
+    },
   });
 
   revalidatePath('/profile/edit');

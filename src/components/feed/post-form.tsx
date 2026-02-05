@@ -66,7 +66,8 @@ export function PostForm({ mode, postId, initialContent, initialEmbeds }: PostFo
       />
 
       <VideoInput
-        onAdd={(embed) => setEmbeds([...embeds, embed])}
+        onAddVideo={(embed) => setEmbeds([...embeds, embed])}
+        onAddImage={() => {/* Images handled separately */ }}
         disabled={isSubmitting}
       />
 

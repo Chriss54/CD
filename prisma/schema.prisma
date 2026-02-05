@@ -19,6 +19,7 @@ model User {
   points         Int       @default(0)
   level          Int       @default(1)
   role           String    @default("member") // member, moderator, admin, owner
+  languageCode   String    @default("en")     // User's preferred language
 
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -69,6 +70,9 @@ model Post {
   comments   Comment[]
   likes      PostLike[]
 
+  languageCode String?   // Detected language of the post
+  contentHash  String?   // SHA-256 hash of content for cache invalidation
+
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
@@ -90,6 +94,9 @@ model Comment {
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   likes     CommentLike[]
+
+  languageCode String?  // Detected language of the comment
+  contentHash  String?  // SHA-256 hash of content for cache invalidation
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -153,6 +160,9 @@ model Course {
   modules     Module[]
   enrollments Enrollment[]
 
+  languageCode String?      // Detected language of the course
+  contentHash  String?      // SHA-256 hash of content for cache invalidation
+
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -197,6 +207,9 @@ model Lesson {
 
   attachments Attachment[]
   progress    LessonProgress[]
+
+  languageCode String?      // Detected language of the lesson
+  contentHash  String?      // SHA-256 hash of content for cache invalidation
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -267,6 +280,9 @@ model Event {
 
   createdById   String
   createdBy     User           @relation(fields: [createdById], references: [id])
+
+  languageCode  String?        // Detected language of the event
+  contentHash   String?        // SHA-256 hash of content for cache invalidation
 
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -353,4 +369,24 @@ model Membership {
 
   @@index([userId])
   @@index([status])
+}
+
+// Translation Cache - Multi-language support
+model Translation {
+  id                String   @id @default(cuid())
+  entityType        String   // "Post", "Comment", "Course", "Lesson", "Event"
+  entityId          String   // ID of the translated entity
+  fieldName         String   // "plainText", "title", "content", "description"
+  sourceLanguage    String   // ISO 639-1 code (e.g., "en", "de")
+  sourceHash        String   // SHA-256 hash of source content
+  targetLanguage    String   // ISO 639-1 code for translation target
+  translatedContent String   @db.Text
+  modelProvider     String   // "deepl"
+  modelVersion      String   // API version or model identifier
+  confidenceScore   Float?   // Optional confidence/quality score
+
+  createdAt         DateTime @default(now())
+
+  @@unique([entityType, entityId, fieldName, targetLanguage])
+  @@index([entityType, entityId, targetLanguage])
 }

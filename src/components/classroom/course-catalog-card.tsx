@@ -8,11 +8,17 @@ export interface CatalogCourse {
   lessonCount: number;
 }
 
-interface CourseCatalogCardProps {
-  course: CatalogCourse;
+interface CatalogCardUI {
+  lessons: string;
+  lesson: string;
 }
 
-export function CourseCatalogCard({ course }: CourseCatalogCardProps) {
+interface CourseCatalogCardProps {
+  course: CatalogCourse;
+  ui: CatalogCardUI;
+}
+
+export function CourseCatalogCard({ course, ui }: CourseCatalogCardProps) {
   return (
     <Link
       href={`/classroom/courses/${course.id}`}
@@ -31,7 +37,7 @@ export function CourseCatalogCard({ course }: CourseCatalogCardProps) {
         )}
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-            {course.lessonCount} {course.lessonCount === 1 ? 'lesson' : 'lessons'}
+            {course.lessonCount} {course.lessonCount === 1 ? ui.lesson : ui.lessons}
           </span>
         </div>
       </div>

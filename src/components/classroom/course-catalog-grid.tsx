@@ -2,15 +2,19 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { CourseCatalogCard, type CatalogCourse } from './course-catalog-card';
 import { EnrolledCourseCard, type EnrolledCourse } from './enrolled-course-card';
 
-interface CourseCatalogGridProps {
-  courses: CatalogCourse[];
-  emptyMessage?: string;
+interface CatalogGridUI {
+  lessons: string;
+  lesson: string;
+  noCoursesAvailable: string;
+  checkBackSoon: string;
 }
 
-export function CourseCatalogGrid({
-  courses,
-  emptyMessage = 'Check back soon for new courses.',
-}: CourseCatalogGridProps) {
+interface CourseCatalogGridProps {
+  courses: CatalogCourse[];
+  ui: CatalogGridUI;
+}
+
+export function CourseCatalogGrid({ courses, ui }: CourseCatalogGridProps) {
   if (courses.length === 0) {
     return (
       <EmptyState
@@ -29,8 +33,8 @@ export function CourseCatalogGrid({
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
           </svg>
         }
-        title="No courses available"
-        description={emptyMessage}
+        title={ui.noCoursesAvailable}
+        description={ui.checkBackSoon}
       />
     );
   }
@@ -38,17 +42,31 @@ export function CourseCatalogGrid({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {courses.map((course) => (
-        <CourseCatalogCard key={course.id} course={course} />
+        <CourseCatalogCard
+          key={course.id}
+          course={course}
+          ui={{ lessons: ui.lessons, lesson: ui.lesson }}
+        />
       ))}
     </div>
   );
 }
 
-interface EnrolledCoursesGridProps {
-  courses: EnrolledCourse[];
+interface EnrolledGridUI {
+  lessons: string;
+  completed: string;
+  continueLearning: string;
+  startCourse: string;
+  noEnrolledCourses: string;
+  notEnrolledYet: string;
 }
 
-export function EnrolledCoursesGrid({ courses }: EnrolledCoursesGridProps) {
+interface EnrolledCoursesGridProps {
+  courses: EnrolledCourse[];
+  ui: EnrolledGridUI;
+}
+
+export function EnrolledCoursesGrid({ courses, ui }: EnrolledCoursesGridProps) {
   if (courses.length === 0) {
     return (
       <EmptyState
@@ -68,8 +86,8 @@ export function EnrolledCoursesGrid({ courses }: EnrolledCoursesGridProps) {
             <path d="M6 12v5c3 3 9 3 12 0v-5" />
           </svg>
         }
-        title="No enrolled courses"
-        description="You haven't enrolled in any courses yet."
+        title={ui.noEnrolledCourses}
+        description={ui.notEnrolledYet}
       />
     );
   }
@@ -77,7 +95,16 @@ export function EnrolledCoursesGrid({ courses }: EnrolledCoursesGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {courses.map((course) => (
-        <EnrolledCourseCard key={course.id} course={course} />
+        <EnrolledCourseCard
+          key={course.id}
+          course={course}
+          ui={{
+            lessons: ui.lessons,
+            completed: ui.completed,
+            continueLearning: ui.continueLearning,
+            startCourse: ui.startCourse,
+          }}
+        />
       ))}
     </div>
   );

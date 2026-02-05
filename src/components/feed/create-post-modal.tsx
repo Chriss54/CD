@@ -21,6 +21,7 @@ interface CreatePostModalProps {
     categories: Category[];
     userImage?: string | null;
     userName?: string | null;
+    writeSomethingPlaceholder?: string;
 }
 
 // Category color map for the pill buttons
@@ -31,7 +32,7 @@ const categoryColors: Record<string, { bg: string; text: string; border: string 
     Questions: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200' },
 };
 
-export function CreatePostModal({ categories, userImage, userName }: CreatePostModalProps) {
+export function CreatePostModal({ categories, userImage, userName, writeSomethingPlaceholder }: CreatePostModalProps) {
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -115,7 +116,7 @@ export function CreatePostModal({ categories, userImage, userName }: CreatePostM
                 <div className="flex items-center gap-3">
                     <Avatar src={userImage} name={userName} size="sm" />
                     <div className="flex-1 px-4 py-2.5 bg-gray-100 rounded-full text-gray-500 text-sm">
-                        Write something...
+                        {writeSomethingPlaceholder || 'Write something...'}
                     </div>
                 </div>
             </div>

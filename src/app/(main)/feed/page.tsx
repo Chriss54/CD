@@ -7,6 +7,8 @@ import { Pagination } from '@/components/ui/pagination';
 import { CategoriesSidebar } from '@/components/feed/categories-sidebar';
 import { RightSidebar } from '@/components/feed/right-sidebar';
 import { CreatePostModal } from '@/components/feed/create-post-modal';
+import { translatePostsForUser } from '@/lib/translation';
+import { translateUIText, translateObjects } from '@/lib/translation/ui';
 
 const POSTS_PER_PAGE = 10;
 
@@ -22,6 +24,14 @@ async function FeedContent({ searchParams }: FeedPageProps) {
 
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
+
+  // Get user's language preference
+  const userLanguage = currentUserId
+    ? (await db.user.findUnique({
+      where: { id: currentUserId },
+      select: { languageCode: true },
+    }))?.languageCode || 'en'
+    : 'en';
 
   // Build where clause for category filter
   const whereClause = category ? { categoryId: category } : {};
@@ -60,7 +70,7 @@ async function FeedContent({ searchParams }: FeedPageProps) {
 
   const totalPages = Math.ceil(total / POSTS_PER_PAGE);
 
-  // Transform posts to add isLiked boolean
+  // Transform posts to add isLiked boolean and prepare for translation
   const postsWithLikeStatus = posts.map((post) => ({
     ...post,
     isLiked: 'likes' in post && Array.isArray(post.likes) && post.likes.length > 0,
@@ -68,28 +78,57 @@ async function FeedContent({ searchParams }: FeedPageProps) {
     commentCount: post._count.comments,
   }));
 
+  // Translate posts to user's preferred language (server-side)
+  const translatedPosts = await translatePostsForUser(postsWithLikeStatus, userLanguage);
+
+  // Translate categories dynamically via DeepL
+  const translatedCategories = await translateObjects(
+    categories,
+    ['name'],
+    'en', // Categories are stored in English
+    userLanguage,
+    'category'
+  );
+
+  // Translate UI strings dynamically
+  const translatedUI = {
+    categoriesTitle: await translateUIText('Categories', 'en', userLanguage, 'sidebar'),
+    allPosts: await translateUIText('All Posts', 'en', userLanguage, 'sidebar'),
+    members: await translateUIText('Members', 'en', userLanguage, 'sidebar'),
+    leaderboard: await translateUIText('Leaderboard', 'en', userLanguage, 'sidebar'),
+    viewAll: await translateUIText('View all', 'en', userLanguage, 'sidebar'),
+    level: await translateUIText('Level', 'en', userLanguage, 'gamification'),
+    writeSomething: await translateUIText('Write something...', 'en', userLanguage, 'placeholder'),
+    noPosts: await translateUIText('No posts yet. Be the first to share something!', 'en', userLanguage, 'message'),
+  };
+
   return (
     <div className="flex gap-6 max-w-7xl mx-auto">
       {/* Left sidebar - Categories */}
-      <CategoriesSidebar categories={categories} activeCategory={category} />
+      <CategoriesSidebar
+        categories={translatedCategories}
+        activeCategory={category}
+        translatedUI={translatedUI}
+      />
 
       {/* Center - Posts feed */}
       <div className="flex-1 min-w-0 space-y-4">
         {/* Create post trigger */}
         <CreatePostModal
-          categories={categories}
+          categories={translatedCategories}
           userImage={session?.user?.image}
           userName={session?.user?.name}
+          writeSomethingPlaceholder={translatedUI.writeSomething}
         />
 
         {/* Posts list */}
-        {postsWithLikeStatus.length === 0 ? (
+        {translatedPosts.length === 0 ? (
           <div className="bg-white rounded-xl p-12 text-center text-gray-500 shadow-sm border border-gray-100">
-            <p>Noch keine Posts. Sei der Erste, der etwas teilt!</p>
+            <p>{translatedUI.noPosts}</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {postsWithLikeStatus.map((post) => (
+            {translatedPosts.map((post) => (
               <PostCard
                 key={post.id}
                 post={post}
@@ -99,6 +138,8 @@ async function FeedContent({ searchParams }: FeedPageProps) {
                 commentCount={post.commentCount}
                 isLiked={post.isLiked}
                 category={post.category}
+                translatedPlainText={post.plainText || undefined}
+                userLanguage={userLanguage}
               />
             ))}
           </div>
@@ -113,7 +154,7 @@ async function FeedContent({ searchParams }: FeedPageProps) {
       </div>
 
       {/* Right sidebar - Members & Leaderboard */}
-      <RightSidebar />
+      <RightSidebar translatedUI={translatedUI} />
     </div>
   );
 }
@@ -138,4 +179,3 @@ export default function FeedPage(props: FeedPageProps) {
     </Suspense>
   );
 }
-

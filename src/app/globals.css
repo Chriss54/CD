@@ -47,3 +47,18 @@ mark {
   margin-bottom: 0;
 }
 
+/* Translation feedback styles */
+.translating {
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.translated {
+  /* Subtle indicator that text has been translated */
+  transition: opacity 0.15s ease;
+}
+
+/* Remove any lingering visual cues after translation completes */
+.translated::after {
+  content: none;
+}
