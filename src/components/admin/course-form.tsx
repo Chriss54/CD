@@ -4,6 +4,7 @@ import { useTransition, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { createCourse, updateCourse } from '@/lib/course-actions';
+import { CourseImageUpload } from '@/components/admin/course-image-upload';
 import type { CourseStatus } from '@/generated/prisma/client';
 
 interface CourseFormProps {
@@ -11,6 +12,7 @@ interface CourseFormProps {
     id: string;
     title: string;
     description: string | null;
+    coverImage: string | null;
     status: CourseStatus;
   };
   onSuccess?: () => void;
@@ -107,6 +109,14 @@ export function CourseForm({ course, onSuccess }: CourseFormProps) {
         </select>
       </div>
 
+      {/* Cover Image - only show for existing courses */}
+      {isEdit && course && (
+        <CourseImageUpload
+          courseId={course.id}
+          currentImageUrl={course.coverImage}
+        />
+      )}
+
       {/* Error */}
       {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -117,8 +127,8 @@ export function CourseForm({ course, onSuccess }: CourseFormProps) {
             ? 'Saving...'
             : 'Creating...'
           : isEdit
-          ? 'Save Changes'
-          : 'Create Course'}
+            ? 'Save Changes'
+            : 'Create Course'}
       </Button>
     </form>
   );
