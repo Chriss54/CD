@@ -27,3 +27,18 @@ export const moduleSchema = z.object({
 });
 
 export type ModuleInput = z.infer<typeof moduleSchema>;
+
+// Course image validation schema
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+export const courseImageSchema = z.object({
+  file: z
+    .instanceof(File)
+    .refine((file) => file.size <= MAX_IMAGE_SIZE, 'Image must be less than 5MB')
+    .refine(
+      (file) => ALLOWED_IMAGE_TYPES.includes(file.type),
+      'Only JPEG, PNG, GIF, and WebP images are allowed'
+    ),
+});
+

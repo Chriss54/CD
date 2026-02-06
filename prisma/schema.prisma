@@ -155,6 +155,7 @@ model Course {
   id          String       @id @default(cuid())
   title       String
   description String?      @db.Text
+  coverImage  String?      // Supabase storage URL for course image
   status      CourseStatus @default(DRAFT)
 
   modules     Module[]

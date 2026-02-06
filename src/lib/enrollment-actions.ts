@@ -118,6 +118,7 @@ export async function getPublishedCourses() {
       id: course.id,
       title: course.title,
       description: course.description,
+      coverImage: course.coverImage,
       lessonCount,
     };
   });

@@ -4,7 +4,8 @@ import { getServerSession } from 'next-auth';
 import { revalidatePath } from 'next/cache';
 import { authOptions } from '@/lib/auth';
 import db from '@/lib/db';
-import { courseSchema } from '@/lib/validations/course';
+import { courseSchema, courseImageSchema } from '@/lib/validations/course';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 async function isAdmin(): Promise<boolean> {
   const session = await getServerSession(authOptions);
@@ -174,4 +175,70 @@ export async function deleteCourse(courseId: string) {
   revalidatePath('/admin/courses');
 
   return { success: true };
+}
+
+export async function uploadCourseImage(courseId: string, formData: FormData) {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return { error: 'Not authenticated' };
+  }
+
+  if (!(await isAdmin())) {
+    return { error: 'Not authorized - admin role required' };
+  }
+
+  const course = await db.course.findUnique({
+    where: { id: courseId },
+  });
+
+  if (!course) {
+    return { error: 'Course not found' };
+  }
+
+  const file = formData.get('image');
+
+  if (!(file instanceof File)) {
+    return { error: 'No file provided' };
+  }
+
+  const validatedFields = courseImageSchema.safeParse({ file });
+
+  if (!validatedFields.success) {
+    return { error: validatedFields.error.flatten().fieldErrors };
+  }
+
+  const supabase = createAdminClient();
+
+  // Generate unique filename
+  const ext = file.name.split('.').pop() || 'jpg';
+  const filename = `courses/${courseId}/cover-${Date.now()}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('course-images')
+    .upload(filename, file, {
+      upsert: true,
+      contentType: file.type,
+    });
+
+  if (uploadError) {
+    return { error: `Upload failed: ${uploadError.message}` };
+  }
+
+  const { data: urlData } = supabase.storage
+    .from('course-images')
+    .getPublicUrl(filename);
+
+  const publicUrl = urlData.publicUrl;
+
+  await db.course.update({
+    where: { id: courseId },
+    data: { coverImage: publicUrl },
+  });
+
+  revalidatePath('/admin/courses');
+  revalidatePath(`/admin/courses/${courseId}`);
+  revalidatePath('/classroom');
+
+  return { success: true, url: publicUrl };
 }
