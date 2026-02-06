@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { authOptions } from '@/lib/auth';
 import db from '@/lib/db';
 import { courseSchema, courseImageSchema } from '@/lib/validations/course';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 async function isAdmin(): Promise<boolean> {
   const session = await getServerSession(authOptions);
@@ -208,7 +208,7 @@ export async function uploadCourseImage(courseId: string, formData: FormData) {
     return { error: validatedFields.error.flatten().fieldErrors };
   }
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // Generate unique filename
   const ext = file.name.split('.').pop() || 'jpg';
