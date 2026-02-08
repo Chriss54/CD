@@ -42,7 +42,7 @@ const COLUMNS: {
 }[] = [
         {
             id: 'TODO',
-            title: 'Neu',
+            title: 'New',
             color: 'bg-blue-100 text-blue-600',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -52,7 +52,7 @@ const COLUMNS: {
         },
         {
             id: 'IN_PROGRESS',
-            title: 'In Arbeit',
+            title: 'In Progress',
             color: 'bg-amber-100 text-amber-600',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -62,7 +62,7 @@ const COLUMNS: {
         },
         {
             id: 'DONE',
-            title: 'Erledigt',
+            title: 'Done',
             color: 'bg-green-100 text-green-600',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -203,7 +203,7 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Karte wirklich löschen?')) return;
+        if (!confirm('Really delete this card?')) return;
         const result = await deleteKanbanCard(id);
         if (result.success) {
             setCards((prev) => ({

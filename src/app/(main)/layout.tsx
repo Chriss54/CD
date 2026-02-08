@@ -6,8 +6,8 @@ import { StickyHeaderWrapper } from '@/components/layout/sticky-header-wrapper';
 import { PaywallModal } from '@/components/paywall/paywall-modal';
 import { Toaster } from 'sonner';
 import { canEditSettings } from '@/lib/permissions';
-import db from '@/lib/db';
 import { getMessages } from '@/lib/i18n';
+import { getUserLanguage } from '@/lib/translation/helpers';
 
 export default async function MainLayout({
   children,
@@ -16,14 +16,8 @@ export default async function MainLayout({
 }) {
   const session = await getServerSession(authOptions);
 
-  // Get user's language preference
-  const userId = session?.user?.id;
-  const userLanguage = userId
-    ? (await db.user.findUnique({
-      where: { id: userId },
-      select: { languageCode: true },
-    }))?.languageCode || 'en'
-    : 'en';
+  // Get user's language preference (now includes IP geolocation detection)
+  const userLanguage = await getUserLanguage();
 
   // Get translated messages
   const messages = getMessages(userLanguage);

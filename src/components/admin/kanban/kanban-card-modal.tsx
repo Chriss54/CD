@@ -38,7 +38,7 @@ export function KanbanCardModal({
             return;
         }
         if (file.size > 5 * 1024 * 1024) {
-            alert('Bild darf maximal 5 MB groß sein.');
+            alert('Image must be 5 MB or smaller.');
             return;
         }
 
@@ -56,11 +56,11 @@ export function KanbanCardModal({
                 console.log('[KanbanUpload] Success! URL:', result.media.url);
             } else if ('error' in result) {
                 console.error('[KanbanUpload] Error:', result.error);
-                alert('Upload fehlgeschlagen: ' + result.error);
+                alert('Upload failed: ' + result.error);
             }
         } catch (err) {
             console.error('[KanbanUpload] Exception:', err);
-            alert('Upload fehlgeschlagen. Bitte versuche es erneut.');
+            alert('Upload failed. Please try again.');
         } finally {
             setUploading(false);
         }
@@ -111,7 +111,7 @@ export function KanbanCardModal({
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                     <h2 className="text-lg font-semibold text-gray-900">
-                        {mode === 'create' ? 'Neue Karte erstellen' : 'Karte bearbeiten'}
+                        {mode === 'create' ? 'Create New Card' : 'Edit Card'}
                     </h2>
                     <button
                         onClick={onClose}
@@ -127,12 +127,12 @@ export function KanbanCardModal({
                 <form onSubmit={handleSubmit} className="p-6 space-y-5">
                     {/* Title */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Titel *</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Title *</label>
                         <input
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            placeholder="Projekt-Name eingeben..."
+                            placeholder="Enter project name..."
                             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
                             autoFocus
                             required
@@ -141,11 +141,11 @@ export function KanbanCardModal({
 
                     {/* Description */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Beschreibung</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Details, Notizen, Informationen..."
+                            placeholder="Details, notes, information..."
                             rows={4}
                             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all resize-none"
                         />
@@ -153,7 +153,7 @@ export function KanbanCardModal({
 
                     {/* Image Upload — Drag & Drop */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Bild (optional)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Image (optional)</label>
                         <input
                             ref={fileInputRef}
                             type="file"
@@ -167,7 +167,7 @@ export function KanbanCardModal({
                             <div className="relative group rounded-xl overflow-hidden border border-gray-200">
                                 <img
                                     src={imageUrl}
-                                    alt="Vorschau"
+                                    alt="Preview"
                                     className="w-full h-40 object-cover"
                                 />
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
@@ -176,7 +176,7 @@ export function KanbanCardModal({
                                         onClick={() => setImageUrl('')}
                                         className="opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1.5 rounded-lg bg-white/90 text-sm font-medium text-red-600 hover:bg-white shadow-sm"
                                     >
-                                        Bild entfernen
+                                        Remove image
                                     </button>
                                 </div>
                             </div>
@@ -200,7 +200,7 @@ export function KanbanCardModal({
                                 {uploading ? (
                                     <>
                                         <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                                        <span className="text-sm text-blue-600 font-medium">Wird hochgeladen...</span>
+                                        <span className="text-sm text-blue-600 font-medium">Uploading...</span>
                                     </>
                                 ) : (
                                     <>
@@ -211,9 +211,9 @@ export function KanbanCardModal({
                                         </div>
                                         <div className="text-center">
                                             <span className="text-sm text-gray-500">
-                                                Bild hierher ziehen oder <span className="text-blue-600 font-medium">durchsuchen</span>
+                                                Drag image here or <span className="text-blue-600 font-medium">browse</span>
                                             </span>
-                                            <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, GIF, WebP — max. 5 MB</p>
+                                            <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, GIF, WebP — max 5 MB</p>
                                         </div>
                                     </>
                                 )}
@@ -228,14 +228,14 @@ export function KanbanCardModal({
                             onClick={onClose}
                             className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
                         >
-                            Abbrechen
+                            Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={!title.trim() || saving || uploading}
                             className="px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
                         >
-                            {saving ? 'Speichere...' : mode === 'create' ? 'Erstellen' : 'Speichern'}
+                            {saving ? 'Saving...' : mode === 'create' ? 'Create' : 'Save'}
                         </button>
                     </div>
                 </form>

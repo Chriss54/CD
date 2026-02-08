@@ -19,14 +19,14 @@ export default function KanbanPage() {
             <div>
                 <h1 className="text-2xl font-semibold text-gray-900">Kanban Board</h1>
                 <p className="text-muted-foreground mt-1">
-                    Projekte verwalten und den Fortschritt verfolgen.
+                    Manage projects and track progress.
                 </p>
             </div>
 
             <Suspense
                 fallback={
                     <div className="p-8 text-center text-muted-foreground">
-                        Board wird geladen...
+                        Loading board...
                     </div>
                 }
             >

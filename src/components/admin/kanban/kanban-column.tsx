@@ -46,14 +46,14 @@ export function KanbanColumn({
                     </div>
                     <div>
                         <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
-                        <span className="text-xs text-gray-400">{cards.length} {cards.length === 1 ? 'Karte' : 'Karten'}</span>
+                        <span className="text-xs text-gray-400">{cards.length} {cards.length === 1 ? 'card' : 'cards'}</span>
                     </div>
                 </div>
                 {onAddCard && (
                     <button
                         onClick={onAddCard}
                         className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                        title="Neue Karte"
+                        title="New Card"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -83,7 +83,7 @@ export function KanbanColumn({
 
                 {cards.length === 0 && (
                     <div className="flex items-center justify-center h-24 rounded-xl border-2 border-dashed border-gray-200 text-gray-300 text-xs">
-                        Karten hierher ziehen
+                        Drag cards here
                     </div>
                 )}
             </div>
